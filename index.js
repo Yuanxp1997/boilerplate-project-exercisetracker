@@ -54,13 +54,28 @@ const addExercise = async (userId, description, duration, date, done) => {
   }
 };
 
-// get user exercises function
-const getUserExercises = async (userId, done) => {
-  const user = await User.findById(userId).select("username _id log").exec();
+// get user log function
+const getUserLog = async (userId, from, to, limit, done) => {
+  const user = await User.findById(userId).exec();
   if (!user) {
     return done("user not found");
   } else {
-    return done(null, user);
+    let log = user.log;
+    if (from) {
+      log = log.filter((exercise) => exercise.date >= new Date(from));
+    }
+    if (to) {
+      log = log.filter((exercise) => exercise.date <= new Date(to));
+    }
+    if (limit) {
+      log = log.slice(0, limit);
+    }
+    return done(null, {
+      _id: user._id,
+      username: user.username,
+      count: user.count,
+      log: log,
+    });
   }
 };
 
@@ -106,12 +121,16 @@ app.post("/api/users/:_id/exercises", (req, res) => {
   });
 });
 
-// handle get request to get user exercises
+// handle get request to get user log
 app.get("/api/users/:_id/logs", (req, res) => {
+  const { from, to, limit } = req.query;
   const userId = req.params._id;
-  getUserExercises(userId, (err, data) => {
-    if (err) return res.json({ error: err });
-    return res.json(data);
+  getUserLog(userId, from, to, limit, (err, data) => {
+    if (err) {
+      return res.json({ error: err });
+    } else {
+      return res.json(data);
+    }
   });
 });
 
