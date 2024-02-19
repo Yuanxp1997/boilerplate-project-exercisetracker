@@ -54,6 +54,16 @@ const addExercise = async (userId, description, duration, date, done) => {
   }
 };
 
+// get user exercises function
+const getUserExercises = async (userId, done) => {
+  const user = await User.findById(userId).select("username _id log").exec();
+  if (!user) {
+    return done("user not found");
+  } else {
+    return done(null, user);
+  }
+};
+
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cors());
 app.use(express.static("public"));
@@ -84,12 +94,21 @@ app.post("/api/users/:_id/exercises", (req, res) => {
   addExercise(userId, description, duration, date, (err, data) => {
     if (err) return res.json({ error: err });
     return res.json({
-      _id: data._id,
+      _id: userId,
       username: data.username,
       description: description,
       duration: duration,
       date: date ? new Date(date).toDateString() : new Date().toDateString(),
     });
+  });
+});
+
+// handle get request to get user exercises
+app.get("/api/users/:_id/logs", (req, res) => {
+  const userId = req.params._id;
+  getUserExercises(userId, (err, data) => {
+    if (err) return res.json({ error: err });
+    return res.json(data);
   });
 });
 
