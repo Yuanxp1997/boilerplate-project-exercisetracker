@@ -70,11 +70,17 @@ const getUserLog = async (userId, from, to, limit, done) => {
     if (limit) {
       log = log.slice(0, limit);
     }
+    if (log.length > 0) {
+      newLog = log.map((exercise) => ({
+        ...exercise._doc,
+        date: exercise.date.toDateString(),
+      }));
+    }
     return done(null, {
       _id: user._id,
       username: user.username,
       count: user.count,
-      log: log,
+      log: newLog,
     });
   }
 };
