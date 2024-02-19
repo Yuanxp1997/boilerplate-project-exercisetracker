@@ -45,7 +45,7 @@ const addExercise = async (userId, description, duration, date, done) => {
     user.count += 1;
     user.log.push({
       description: description,
-      duration: duration,
+      duration: parseInt(duration),
       date: date ? new Date(date) : new Date(),
     });
     user.save().then((data) => {
@@ -99,7 +99,7 @@ app.post("/api/users/:_id/exercises", (req, res) => {
         _id: userId,
         username: data.username,
         date: date ? new Date(date).toDateString() : new Date().toDateString(),
-        duration: duration,
+        duration: parseInt(duration),
         description: description,
       });
     }
