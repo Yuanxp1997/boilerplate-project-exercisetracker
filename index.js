@@ -92,14 +92,17 @@ app.post("/api/users/:_id/exercises", (req, res) => {
   const { description, duration, date } = req.body;
   const userId = req.params._id;
   addExercise(userId, description, duration, date, (err, data) => {
-    if (err) return res.json({ error: err });
-    return res.json({
-      _id: userId,
-      username: data.username,
-      description: description,
-      duration: duration,
-      date: date ? new Date(date).toDateString() : new Date().toDateString(),
-    });
+    if (err) {
+      return res.json({ error: err });
+    } else {
+      return res.json({
+        _id: userId,
+        username: data.username,
+        date: date ? new Date(date).toDateString() : new Date().toDateString(),
+        duration: duration,
+        description: description,
+      });
+    }
   });
 });
 
