@@ -17,6 +17,7 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model("User", userSchema);
 
+// create user function
 const createUser = async (username, done) => {
   const user = await User.findOne({ username: username }).exec();
   if (user) {
@@ -29,9 +30,28 @@ const createUser = async (username, done) => {
   }
 };
 
+// get all users function
 const getAllUsers = async (done) => {
   const users = await User.find({}).select("username _id").exec();
   return done(null, users);
+};
+
+// add exercise function
+const addExercise = async (userId, description, duration, date, done) => {
+  const user = await User.findById(userId).exec();
+  if (!user) {
+    return done("user not found");
+  } else {
+    user.count += 1;
+    user.log.push({
+      description: description,
+      duration: duration,
+      date: date ? new Date(date) : new Date(),
+    });
+    user.save().then((data) => {
+      return done(null, data);
+    });
+  }
 };
 
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -54,6 +74,22 @@ app.get("/api/users", (req, res) => {
   getAllUsers((err, data) => {
     if (err) return res.json({ error: err });
     return res.json(data);
+  });
+});
+
+// handle post request to add exercise
+app.post("/api/users/:_id/exercises", (req, res) => {
+  const { description, duration, date } = req.body;
+  const userId = req.params._id;
+  addExercise(userId, description, duration, date, (err, data) => {
+    if (err) return res.json({ error: err });
+    return res.json({
+      _id: data._id,
+      username: data.username,
+      description: description,
+      duration: duration,
+      date: date ? new Date(date).toDateString() : new Date().toDateString(),
+    });
   });
 });
 
